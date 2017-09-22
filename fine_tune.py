@@ -22,17 +22,17 @@ from deeplab_resnet import DeepLabResNetModel, ImageReader, decode_labels, inv_p
 IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
 
 BATCH_SIZE = 4
-DATA_DIRECTORY = '/home/VOCdevkit'
+DATA_DIRECTORY = '/data1/hut/dataset/pascalvoc2012/VOC2012trainval/VOCdevkit/VOC2012'
 DATA_LIST_PATH = './dataset/train.txt'
 IGNORE_LABEL = 255
 INPUT_SIZE = '321,321'
 LEARNING_RATE = 1e-4
 NUM_CLASSES = 21
-NUM_STEPS = 20000
+NUM_STEPS = 20001
 RANDOM_SEED = 1234
-RESTORE_FROM = './deeplab_resnet.ckpt'
+RESTORE_FROM = './deeplab_resnet_init.ckpt'
 SAVE_NUM_IMAGES = 2
-SAVE_PRED_EVERY = 100
+SAVE_PRED_EVERY = 1000
 SNAPSHOT_DIR = './snapshots_finetune/'
 
 def get_arguments():

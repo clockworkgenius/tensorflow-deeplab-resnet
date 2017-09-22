@@ -21,20 +21,22 @@ from deeplab_resnet import DeepLabResNetModel, ImageReader, decode_labels, inv_p
 IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
 
 BATCH_SIZE = 10
-DATA_DIRECTORY = '/home/VOCdevkit'
-DATA_LIST_PATH = './dataset/train.txt'
+#DATA_DIRECTORY = '/data_a/dataset/pascalvoc2012/VOC2012trainval/VOCdevkit/VOC2012'
+DATA_DIRECTORY = ''
+#DATA_LIST_PATH = './dataset/train.txt'
+DATA_LIST_PATH = '/data_a/code/coco/PythonAPI/coco.txt'
 IGNORE_LABEL = 255
 INPUT_SIZE = '321,321'
 LEARNING_RATE = 2.5e-4
 MOMENTUM = 0.9
 NUM_CLASSES = 21
-NUM_STEPS = 20001
+NUM_STEPS = 200001
 POWER = 0.9
 RANDOM_SEED = 1234
-RESTORE_FROM = './deeplab_resnet.ckpt'
+RESTORE_FROM = './deeplab_resnet_init.ckpt'
 SAVE_NUM_IMAGES = 2
-SAVE_PRED_EVERY = 1000
-SNAPSHOT_DIR = './snapshots/'
+SAVE_PRED_EVERY = 20000
+SNAPSHOT_DIR = './snapshots_coco/ptrd/'
 WEIGHT_DECAY = 0.0005
 
 
@@ -177,6 +179,9 @@ def main():
     l2_losses = [args.weight_decay * tf.nn.l2_loss(v) for v in tf.trainable_variables() if 'weights' in v.name]
     reduced_loss = tf.reduce_mean(loss) + tf.add_n(l2_losses)
     
+    #tensorboard
+    tf.summary.scalar('loss', reduced_loss)
+ 
     # Processed predictions: for visualisation.
     raw_output_up = tf.image.resize_bilinear(raw_output, tf.shape(image_batch)[1:3,])
     raw_output_up = tf.argmax(raw_output_up, dimension=3)
@@ -220,6 +225,10 @@ def main():
     sess = tf.Session(config=config)
     init = tf.global_variables_initializer()
     
+    #tensorboard
+    merged = tf.summary.merge_all()
+    tbwriter = tf.summary.FileWriter("logs/", sess.graph)
+ 
     sess.run(init)
     
     # Saver for storing checkpoints of the model.
@@ -246,6 +255,10 @@ def main():
             loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
         duration = time.time() - start_time
         print('step {:d} \t loss = {:.3f}, ({:.3f} sec/step)'.format(step, loss_value, duration))
+        #tensorboard
+        if step % 50 == 0:
+            result = sess.run(merged, feed_dict = feed_dict)
+	    tbwriter.add_summary(result, step)
     coord.request_stop()
     coord.join(threads)
     
